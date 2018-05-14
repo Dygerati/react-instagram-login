@@ -28,7 +28,12 @@ class InstagramLogin extends Component {
   }
 
   componentDidMount() {
-    if (window.location.search.includes('code')) {
+    if (this.props.implicitAuth) {
+      const matches = window.location.hash.match(/=(.*)/);
+      if (matches) {
+        this.props.onSuccess(matches[1])
+      }
+    } else if (window.location.search.includes('code')) {
       this.props.onSuccess(getQueryVariable('code'))
     } else if (window.location.search.includes('error')) {
       this.props.onFailure({
@@ -42,7 +47,8 @@ class InstagramLogin extends Component {
   onBtnClick() {
     const { clientId, scope } = this.props
     const redirectUri = this.props.redirectUri || window.location.href
-    window.location.href = `https://api.instagram.com/oauth/authorize/?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=code`
+    const responseType = this.props.implicitAuth ? 'token' : 'code'
+    window.location.href = `https://api.instagram.com/oauth/authorize/?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=${responseType}`
   }
 
   render() {
@@ -77,7 +83,8 @@ InstagramLogin.defaultProps = {
   buttonText: 'Login with Instagram',
   scope: 'basic',
   tag: 'button',
-  type: 'button'
+  type: 'button',
+  implicitAuth: false
 }
 
 InstagramLogin.propTypes = {
@@ -90,7 +97,8 @@ InstagramLogin.propTypes = {
   children: PropTypes.node,
   tag: PropTypes.string,
   redirectUri: PropTypes.string,
-  type: PropTypes.string
+  type: PropTypes.string,
+  implicitAuth: PropTypes.boolean
 }
 
 export default InstagramLogin
